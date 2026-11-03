@@ -1,0 +1,10 @@
+# Material da revista e arquivos de trabalho nunca entram no repositório
+*.pdf
+*.docx
+*.key
+*.pptx
+Lição*.md
+Licao*.md
+Resumo*.md
+.DS_Store
+.playwright-mcp/

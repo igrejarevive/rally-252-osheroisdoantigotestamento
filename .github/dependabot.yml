@@ -1,0 +1,11 @@
+# Avisa (abrindo uma proposta de atualização) quando sair versão nova das ações do GitHub
+# usadas em .github/workflows. Só ações: o site não tem outras dependências.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # Só propõe versões lançadas há pelo menos 14 dias (mesma regra adotada na decisão 8)
+    cooldown:
+      default-days: 14
