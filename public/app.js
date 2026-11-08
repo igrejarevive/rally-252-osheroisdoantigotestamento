@@ -82,6 +82,7 @@ function mapa() {
         <button class="mini alt" type="button" id="openRestore" style="justify-self:start">Recuperar meu progresso</button>
         <div id="restoreBox" hidden><div class="restore"><input id="codeIn" placeholder="RALLY-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Código de progresso"><button class="mini" type="button" id="doRestore">Recuperar</button></div></div>
         <p class="msg" id="restoreMsg" hidden></p>
+        ${visitadas.size ? `<button class="mini reset" type="button" id="reset">Reiniciar o Rally do zero</button>` : ""}
       </div>
     </section>
     <div class="map" id="map"><svg class="road" id="road"></svg>
@@ -131,7 +132,20 @@ function ligarCodigo() {
     aviso(`Pronto! ${visitadas.size - antes} etapa(s) recuperada(s). Você tem ${visitadas.size} de ${TOTAL}.`, true);
   };
   document.getElementById("doRestore").onclick = recuperar;
+  const reset = document.getElementById("reset");
+  if (reset) reset.onclick = resetar;
   document.getElementById("codeIn").onkeydown = e => { if (e.key === "Enter") recuperar(); };
+}
+// Apaga etapas e respostas do Desafio deste aparelho; mantém as escolhas de som (🔊 e 🎵)
+function resetar() {
+  const codigo = gerarCodigo();
+  if (!confirm(`Reiniciar o Rally do zero?\n\nTodas as etapas abertas e as respostas do Desafio da Semana serão apagadas deste celular.\n\nSe mudar de ideia, anote o código ${codigo}: ele recupera as etapas em "Recuperar meu progresso" (as respostas do Desafio não voltam).`)) return;
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("g252-") && k !== "g252-som" && k !== "g252-fundo").forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
+  visitadas = new Set(); ultima = 0;
+  mapa();
+  scrollTo(0, 0);
 }
 function desenharEstrada() {
   const map = document.getElementById("map"), road = document.getElementById("road");
