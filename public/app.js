@@ -46,12 +46,19 @@ const intro = document.getElementById("intro");
 function fecharIntro() { intro.classList.add("out"); setTimeout(() => intro.remove(), 550); }
 intro.querySelectorAll("[data-go]").forEach(b => b.onclick = fecharIntro);
 if (location.hash) intro.remove();
-setTimeout(() => document.getElementById("icar") && document.getElementById("icar").classList.add("stop"), 1500);
+// A animação espera o toque em "Ligar o motor": só depois de um toque o celular deixa tocar som
+intro.querySelector("#ligar").onclick = () => {
+  Som.musica("abertura"); Som.destravar(); Som.tocar("motor");
+  intro.classList.remove("wait");
+  setTimeout(() => document.getElementById("icar") && document.getElementById("icar").classList.add("stop"), 1500);
+};
 
 // ---------- Topo ----------
 function topo(voltar) {
   topEl.innerHTML = (voltar ? `<button class="back" type="button" data-hash="">← Mapa</button>` : `<img src="logo-g252.png" alt="">`) +
-    `<div class="t-name">Rally<small>Geração 252</small></div><span class="pill">${visitadas.size}/${TOTAL} etapas</span>`;
+    `<div class="t-name">Rally<small>Geração 252</small></div><span class="pill">${visitadas.size}/${TOTAL}<span class="pw"> etapas</span></span>` +
+    `<button class="snd${Som.fundo ? "" : " off"}" type="button" id="musica" aria-label="Música de fundo" aria-pressed="${Som.fundo}">🎵</button>` +
+    `<button class="snd" type="button" id="snd" aria-label="${Som.ligado ? "Desligar o som" : "Ligar o som"}">${Som.ligado ? "🔊" : "🔇"}</button>`;
 }
 
 // ---------- Mapa ----------
@@ -155,7 +162,10 @@ function desenharEstrada() {
 function licao(n) {
   const l = byN[n];
   if (!l) { location.hash = ""; return; }
+  const nova = !visitadas.has(n);
   visitar(n);
+  Som.tocar("vrum");
+  if (nova) setTimeout(() => Som.tocar("etapa"), 650);
   topo(true);
   const z = zonaDe(n), prox = byN[n + 1];
   app.innerHTML = `<article class="page">
@@ -199,7 +209,10 @@ function licao(n) {
     const t = d.querySelector("textarea"), c = d.querySelector("input"), b = d.querySelector(".link"), an = d.querySelector(".ans");
     t.value = store["t" + i] || ""; c.checked = !!store["d" + i];
     t.oninput = () => { store["t" + i] = t.value; put(key, store); };
-    c.onchange = () => { store["d" + i] = c.checked; put(key, store); };
+    c.onchange = () => {
+      store["d" + i] = c.checked; put(key, store);
+      if (c.checked) Som.tocar(l.desafio.every((_, k) => store["d" + k]) ? "fanfarra" : "item");
+    };
     b.onclick = () => { an.hidden = !an.hidden; b.textContent = an.hidden ? "Ver resposta" : "Esconder resposta"; };
   });
   scrollTo(0, 0);
@@ -225,7 +238,7 @@ function quiz() {
   const game = document.getElementById("game");
   const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]);
   let idx, total, log;
-  const comecar = () => { idx = 0; total = 0; log = []; perguntar(); };
+  const comecar = () => { idx = 0; total = 0; log = []; Som.musica("quiz"); perguntar(); };
   game.innerHTML = `<h2>Quiz da Chegada</h2><p class="lead">${Q.length} pergunta${Q.length > 1 ? "s" : ""}, uma de cada etapa · ${TIME} segundos cada.<br>Quanto mais rápido você acertar, mais pontos ganha! As respostas aparecem no final.</p>
     <div><button class="btn" type="button" id="go">Começar</button></div>`;
   document.getElementById("go").onclick = comecar;
@@ -241,6 +254,7 @@ function quiz() {
       clearInterval(timerId);
       btns.forEach(b => b.disabled = true);
       if (btn) btn.classList.add("pick");
+      Som.tocar("trava"); // som neutro: não entrega se acertou
       const resta = Math.max(0, TIME - (Date.now() - t0) / 1000);
       const pts = escolha === q.op[0] ? Math.round(500 + 500 * resta / TIME) : 0;
       total += pts; log.push({ escolha, pts });
@@ -248,14 +262,17 @@ function quiz() {
     };
     btns.forEach((b, i) => b.onclick = () => responder(ordem[i], b));
     clearInterval(timerId);
+    let ultimoSeg = TIME;
     timerId = setInterval(() => {
-      const resta = TIME - (Date.now() - t0) / 1000;
+      const resta = TIME - (Date.now() - t0) / 1000, seg = Math.max(0, Math.ceil(resta));
       bar.style.width = Math.max(0, resta / TIME * 100) + "%";
-      secs.textContent = Math.max(0, Math.ceil(resta)) + "s";
+      secs.textContent = seg + "s";
+      if (seg !== ultimoSeg) { ultimoSeg = seg; if (seg > 0 && seg <= 5) Som.tocar("tique"); }
       if (resta <= 0) responder(null);
     }, 100);
   }
   function final() {
+    Som.musica("chegada");
     const acertos = log.filter(l => l.pts > 0).length;
     const msg = acertos === Q.length ? "Perfeito! Você está pronto para o Rally!" : acertos >= Q.length * .7 ? "Muito bem! Você estudou as lições." : "Bom começo! Releia as etapas e tente de novo.";
     game.innerHTML = `<div class="big">${total}</div><p class="lead">pontos · ${acertos} de ${Q.length} acertos</p>
@@ -273,6 +290,7 @@ function quiz() {
 // ---------- Rotas ----------
 function rota() {
   clearInterval(timerId);
+  Som.musica("mapa"); // música calma no mapa, nas lições e na tela inicial do quiz
   const h = location.hash.slice(1);
   if (h === "quiz") quiz();
   else if (h.startsWith("licao-")) licao(+h.slice(6));

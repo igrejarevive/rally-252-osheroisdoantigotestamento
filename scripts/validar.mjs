@@ -12,7 +12,7 @@ const erro = msg => erros.push(msg);
 const ler = f => readFileSync(join(PUB, f), "utf8");
 
 // 1. Os scripts compilam
-for (const f of ["licoes.js", "app.js"]) {
+for (const f of ["licoes.js", "som.js", "app.js"]) {
   try { new vm.Script(ler(f), { filename: f }); } catch (e) { erro(`${f}: erro de sintaxe: ${e.message}`); }
 }
 
@@ -57,7 +57,7 @@ for (const ic of manifest.icons || []) if (!existsSync(join(PUB, ic.src))) erro(
 // 4. Segurança: CSP presente, nada inline executável, nenhum endereço externo
 if (!/http-equiv="Content-Security-Policy"/.test(html)) erro("index.html sem Content-Security-Policy");
 if (/<script>(?!\s*<\/script>)/.test(html)) erro("index.html tem <script> inline (a CSP bloqueia): mova para app.js");
-for (const f of ["index.html", "app.js", "licoes.js"]) {
+for (const f of ["index.html", "app.js", "som.js", "licoes.js"]) {
   const src = ler(f);
   if (/\son[a-z]+="/i.test(src)) erro(`${f}: atributo de evento inline (ex.: onclick="..."). Use data-hash ou addEventListener`);
   const ext = src.match(/https?:\/\/[^\s"'`)]+/g);

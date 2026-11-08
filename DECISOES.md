@@ -51,3 +51,13 @@ executaria nem enviaria dados para fora.
 **Decisão:** o GitHub Actions roda `scripts/validar.mjs` e só publica se passar. As ações
 oficiais são fixadas por SHA, versões com mais de 2 semanas de lançamento, e com permissões mínimas.
 **Consequências:** um erro de digitação em `licoes.js` não derruba o site das crianças.
+
+## 9. Sons gerados no próprio site — 08/11/2026
+**Decisão:** músicas e efeitos (motor, abertura, música calma, música tensa do quiz, jingles,
+cliques) são sintetizados pelo navegador (Web Audio) em `public/som.js`, sem arquivos de áudio.
+A abertura espera o toque em "Ligar o motor", porque o celular só libera som depois de um toque.
+O som começa ligado, com botão 🔊/🔇 no topo (tudo) e 🎵 (só a música calma de fundo; abertura,
+quiz e efeitos continuam), ambos lembrados no aparelho; a música pausa com o celular
+bloqueado. No quiz, o som ao responder é neutro, para não entregar se a criança acertou.
+**Consequências:** sem direito autoral, sem peso extra no 4G e sem mudar a CSP. O som é estilo
+videogame (8-bit), não realista. No iPhone, a chave de silencioso também silencia o site.

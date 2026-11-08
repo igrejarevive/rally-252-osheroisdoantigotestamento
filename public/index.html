@@ -56,6 +56,11 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 /* ---------- Abertura ---------- */
 #intro { position: fixed; inset: 0; z-index: 60; background: radial-gradient(120% 80% at 50% 35%, var(--navy-2), var(--navy) 70%); color: #fff; overflow: hidden; display: grid; place-items: center; transition: opacity .5s; }
 #intro.out { opacity: 0; pointer-events: none; }
+/* antes do toque em "Ligar o motor", a animação fica parada no começo */
+#intro.wait *, #intro.wait *::before { animation-play-state: paused !important; }
+.i-key { position: absolute; z-index: 4; inset: 0; margin: auto; width: max-content; height: max-content; font-size: 20px; padding: 16px 28px; animation: pulse 1.6s infinite; }
+#intro.wait .i-key { animation-play-state: running !important; }
+#intro:not(.wait) .i-key { display: none; }
 .i-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; background:
   radial-gradient(circle at 20% 30%, rgba(0,0,0,.25) 0 6px, transparent 7px) 0 0 / 46px 30px,
   linear-gradient(#8a5a2b, #4a3220); }
@@ -93,8 +98,16 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--navy); color: #fff; display: flex; align-items: center; gap: 10px; padding: 8px var(--gutter-r) 8px var(--gutter-l); min-height: 56px; }
 .top img { width: 40px; height: 40px; background: #fff; border-radius: 50%; padding: 3px; }
 .top .t-name { font-family: var(--display); font-size: 20px; line-height: 1; flex: 1; min-width: 0; }
-.top .t-name small { display: block; font-family: var(--body); font-size: 12px; font-weight: 600; opacity: .8; margin-top: 3px; }
+.top .t-name small { display: block; white-space: nowrap; font-family: var(--body); font-size: 12px; font-weight: 600; opacity: .8; margin-top: 3px; }
 .pill { background: var(--orange); color: #fff; font-weight: 800; border-radius: 99px; padding: 5px 11px; font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.snd { flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.14); font-size: 18px; line-height: 1; padding: 0; position: relative; }
+/* 🎵 desligado: apagado e riscado */
+.snd.off { opacity: .5; }
+.snd.off::after { content: ""; position: absolute; left: 8px; right: 8px; top: 50%; height: 3px; background: #fff; border-radius: 2px; transform: rotate(-45deg); }
+.pill { margin-left: auto; }
+/* nas lições, no celular, o nome "Rally" sai do topo para caber ← Mapa, etapas, 🎵 e 🔊 */
+@media (max-width: 440px) { .top .back + .t-name { display: none; } }
+@media (max-width: 400px) { .pill .pw { display: none; } }
 .back { background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 99px; padding: 8px 12px; font-weight: 700; font-size: 15px; }
 
 /* ---------- Mapa ---------- */
@@ -236,8 +249,9 @@ label.chk input { width: 22px; height: 22px; accent-color: var(--green); }
   </symbol>
 </svg>
 
-<div id="intro" role="dialog" aria-label="Abertura do Rally">
+<div id="intro" class="wait" role="dialog" aria-label="Abertura do Rally">
   <button class="i-skip" type="button" data-go>Pular</button>
+  <button class="btn i-key" type="button" id="ligar">🔑 Ligar o motor</button>
   <div class="i-ground"></div>
   <div class="i-car" id="icar"><span class="puff"></span><span class="puff"></span><span class="puff"></span><svg viewBox="0 0 120 64"><use href="#car"/></svg></div>
   <div class="i-center">
@@ -255,6 +269,7 @@ label.chk input { width: 22px; height: 22px; accent-color: var(--green); }
 <main id="app"></main>
 
 <script src="licoes.js"></script>
+<script src="som.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
